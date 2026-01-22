@@ -1,39 +1,40 @@
 {
   "name": "usdcx-bridge-app",
   "version": "1.0.0",
-  "description": "ChatGPT App for USDCx Bridge using MCP",
-  "main": "dist/server/index.js",
+  "description": "USDCx Bridge MCP Server for Cloudflare Workers",
+  "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server/index.js",
-    "start:http": "node dist/server/http-server.js",
-    "dev": "tsc --watch",
-    "test": "npm run build && npx @modelcontextprotocol/inspector node dist/server/index.js"
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "usdcx",
     "bridge",
     "stacks",
     "mcp",
-    "chatgpt"
+    "chatgpt",
+    "cloudflare-workers"
   ],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "agents": "^0.3.1",
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@scure/base": "^2.0.0",
+    "@stacks/transactions": "^7.3.1",
+    "micro-packed": "^0.8.0",
+    "viem": "^2.44.4",
+    "zod": "^4.2.1"
+  },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.10",
-    "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.3",
-    "@scure/base": "^2.0.0",
-    "@stacks/transactions": "^7.3.1",
-    "cors": "^2.8.5",
-    "express": "^5.2.1",
-    "micro-packed": "^0.8.0",
-    "viem": "^2.44.4",
-    "zod": "^4.3.5"
+    "typescript": "5.9.3",
+    "wrangler": "^4.56.0"
   }
 }

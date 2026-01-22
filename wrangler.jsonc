@@ -1,0 +1,38 @@
+/**
+ * Cloudflare Workers configuration for USDCx Bridge MCP Server
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "usdcx-bridge-mcp",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-03-10",
+	"compatibility_flags": ["nodejs_compat"],
+	"migrations": [
+		{
+			"new_sqlite_classes": ["USDCxBridgeMCP"],
+			"tag": "v1"
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"class_name": "USDCxBridgeMCP",
+				"name": "MCP_OBJECT"
+			}
+		]
+	},
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"NODE_ENV": "production",
+		"ETHEREUM_RPC_URL": "https://ethereum-sepolia.publicnode.com",
+		"STACKS_NETWORK": "testnet",
+		"XRESERVE_CONTRACT": "0x008888878f94C0d87defdf0B07f46B93C1934442",
+		"USDC_CONTRACT": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+		"STACKS_USDCX_CONTRACT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx-v1",
+		"STACKS_DOMAIN": "10003",
+		"ETHEREUM_DOMAIN": "0"
+	}
+}
