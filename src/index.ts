@@ -26,7 +26,7 @@ export class USDCxBridgeMCP extends McpAgent {
 	server = new McpServer({
 		name: "USDCx Bridge",
 		version: "1.0.0",
-	});
+	}) as any;
 
 	async init() {
 		// TOOL 1: Prepare USDC deposit to Stacks
@@ -37,7 +37,7 @@ export class USDCxBridgeMCP extends McpAgent {
 				stacksRecipient: z.string().describe('Stacks address to receive USDCx (starts with ST)'),
 				userEthereumAddress: z.string().describe("User's Ethereum address (for allowance checking)"),
 			},
-			async ({ amount, stacksRecipient, userEthereumAddress }) => {
+			async ({ amount, stacksRecipient, userEthereumAddress }: { amount: string; stacksRecipient: string; userEthereumAddress: string }) => {
 				try {
 					// Validate inputs
 					if (!isValidStacksAddress(stacksRecipient)) {
@@ -85,7 +85,7 @@ export class USDCxBridgeMCP extends McpAgent {
 				ethereumRecipient: z.string().describe('Ethereum address to receive USDC'),
 				stacksAddress: z.string().describe('Stacks address initiating the withdrawal'),
 			},
-			async ({ amount, ethereumRecipient, stacksAddress }) => {
+			async ({ amount, ethereumRecipient, stacksAddress }: { amount: string; ethereumRecipient: string; stacksAddress: string }) => {
 				try {
 					// Validate inputs
 					if (!isValidEthereumAddress(ethereumRecipient)) {
@@ -134,7 +134,7 @@ export class USDCxBridgeMCP extends McpAgent {
 				txHash: z.string().describe('Transaction hash to check'),
 				chain: z.enum(['ethereum', 'stacks']).describe('Which chain the transaction is on'),
 			},
-			async ({ txHash, chain }) => {
+			async ({ txHash, chain }: { txHash: string; chain: 'ethereum' | 'stacks' }) => {
 				try {
 					const status = chain === 'ethereum'
 						? await getEthereumTransactionStatus(txHash as `0x${string}`)
@@ -178,7 +178,7 @@ export class USDCxBridgeMCP extends McpAgent {
 				ethereumAddress: z.string().optional().describe('Ethereum address (optional)'),
 				stacksAddress: z.string().optional().describe('Stacks address (optional)'),
 			},
-			async ({ ethereumAddress, stacksAddress }) => {
+			async ({ ethereumAddress, stacksAddress }: { ethereumAddress?: string; stacksAddress?: string }) => {
 				try {
 					const balances: { usdc?: string; usdcx?: string } = {};
 

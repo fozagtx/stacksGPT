@@ -133,7 +133,7 @@ export async function getStacksTransactionStatus(txId: string): Promise<StacksTr
       };
     }
 
-    const txData = await response.json();
+    const txData = await response.json() as any;
 
     let state: StacksTransactionStatus['state'];
     let eta: string | undefined;
@@ -143,7 +143,7 @@ export async function getStacksTransactionStatus(txId: string): Promise<StacksTr
         // Check confirmations
         if (txData.block_height) {
           const latestBlockResponse = await fetch(`${apiUrl}/v2/info`);
-          const latestBlock = await latestBlockResponse.json();
+          const latestBlock = await latestBlockResponse.json() as any;
           const confirmations = latestBlock.stacks_tip_height - txData.block_height + 1;
 
           if (confirmations >= 6) {
@@ -161,7 +161,7 @@ export async function getStacksTransactionStatus(txId: string): Promise<StacksTr
         return {
           state,
           confirmations: txData.block_height ?
-            (await fetch(`${apiUrl}/v2/info`).then(r => r.json())).stacks_tip_height - txData.block_height + 1 : 0,
+            (await fetch(`${apiUrl}/v2/info`).then(r => r.json()) as any).stacks_tip_height - txData.block_height + 1 : 0,
           explorerUrl: `https://explorer.hiro.so/txid/${txId}?chain=${isMainnet ? 'mainnet' : 'testnet'}`
         };
 
