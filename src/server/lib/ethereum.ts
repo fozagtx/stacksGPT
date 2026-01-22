@@ -81,8 +81,8 @@ const publicClient = createPublicClient({
 export interface DepositTransactionData {
   to: Address;
   data: Hex;
-  value: bigint;
-  estimatedGas: bigint;
+  value: string;
+  estimatedGas: string;
   requiresApproval: boolean;
   approvalTx?: {
     to: Address;
@@ -172,8 +172,8 @@ export async function prepareDepositTransaction(
   return {
     to: XRESERVE_CONTRACT,
     data: depositData,
-    value: BigInt(0), // No ETH value needed
-    estimatedGas,
+    value: '0x0', // No ETH value needed
+    estimatedGas: `0x${estimatedGas.toString(16)}`,
     requiresApproval,
     approvalTx
   };
