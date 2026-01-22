@@ -16,10 +16,11 @@
     "sourceMap": true
   },
   "include": [
-    "src/**/*"
+    "src/server/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "src/widgets"
   ]
 }

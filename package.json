@@ -5,7 +5,9 @@
   "main": "dist/server/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:server && npm run build:widgets",
+    "build:server": "tsc",
+    "build:widgets": "node build-widgets.js",
     "start": "node dist/server/index.js",
     "start:http": "node dist/server/http-server.js",
     "dev": "tsc --watch",
@@ -24,16 +26,24 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.10",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "esbuild": "^0.20.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
     "@scure/base": "^2.0.0",
+    "@stacks/connect": "^7.8.3",
     "@stacks/transactions": "^7.3.1",
+    "@tanstack/react-query": "^5.17.19",
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "micro-packed": "^0.8.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "viem": "^2.44.4",
+    "wagmi": "^2.5.7",
     "zod": "^4.3.5"
   }
 }

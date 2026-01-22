@@ -147,55 +147,11 @@ async function handleMCPRequest(requestData: any) {
         // Prepare the deposit transaction
         const txData = await prepareDepositTransaction(amount, stacksRecipient, userEthereumAddress);
 
-        // Generate ready-to-use code snippets
-        const metaMaskSnippet = `
-// Bridge ${amount} USDC to USDCx for ${stacksRecipient}
-(async () => {
-  if (!window.ethereum) throw new Error("MetaMask not found");
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  const signer = provider.getSigner();
-${txData.requiresApproval ? `
-  console.log("Step 1: Approving USDC...");
-  const approveTx = await signer.sendTransaction({
-    to: "${txData.approvalTx!.to}",
-    data: "${txData.approvalTx!.data}"
-  });
-  console.log("Approval sent:", approveTx.hash);
-  await approveTx.wait();
-  console.log("Approval confirmed");
-` : `  console.log("USDC already approved");`}
-
-  console.log("Step 2: Bridging to Stacks...");
-  const depositTx = await signer.sendTransaction({
-    to: "${txData.to}",
-    data: "${txData.data}",
-    gasLimit: ${txData.estimatedGas.toString()}
-  });
-  console.log("Bridge tx sent:", depositTx.hash);
-  await depositTx.wait();
-  console.log("Bridge complete! USDCx will arrive in ~15 minutes");
-})();`;
-
-        // Generate manual transaction details
-        const manualDetails = txData.requiresApproval ?
-        `**Step 1: Approve USDC**
-• Contract: ${txData.approvalTx!.to}
-• Data: ${txData.approvalTx!.data}
-
-**Step 2: Bridge Deposit**
-• Contract: ${txData.to}
-• Data: ${txData.data}
-• Gas Limit: ${txData.estimatedGas}` :
-        `**Single Transaction** (pre-approved)
-• Contract: ${txData.to}
-• Data: ${txData.data}
-• Gas Limit: ${txData.estimatedGas}`;
-
-        const statusMessage = txData.requiresApproval ?
-          `**STEP 1 REQUIRED**: You must approve USDC spending first, then submit the bridge transaction.` :
-          `**READY**: USDC already approved, you can bridge immediately.`;
+        // Create widget URL with transaction data
+        const widgetUrl = `${process.env.BASE_URL || 'http://localhost:3001'}/widgets/deposit.html?` +
+          `amount=${encodeURIComponent(amount)}&` +
+          `recipient=${encodeURIComponent(stacksRecipient)}&` +
+          `data=${encodeURIComponent(JSON.stringify(txData))}`;
 
         return {
           jsonrpc: '2.0',
@@ -203,14 +159,17 @@ ${txData.requiresApproval ? `
           result: {
             content: [{
               type: 'text',
-              text: `**Bridge ${amount} USDC → USDCx**\n` +
-                    `**Destination**: ${stacksRecipient}\n\n` +
-                    `${statusMessage}\n\n` +
-                    `**Complete Script (Copy & Paste to Browser Console):**\n\`\`\`javascript${metaMaskSnippet}\`\`\`\n\n` +
-                    `**Manual Step-by-Step:**\n${manualDetails}\n\n` +
-                    `**Networks**: Ethereum Sepolia → Stacks Testnet\n` +
-                    `**Bridge Time**: ~15 minutes after confirmation`
-            }]
+              text: `✅ **Prepared deposit of ${amount} USDC to ${stacksRecipient.slice(0, 8)}...**\n\n` +
+                    `💰 Amount: ${amount} USDC → ${amount} USDCx\n` +
+                    `⏰ Estimated time: ~15 minutes\n` +
+                    `🔧 ${txData.requiresApproval ? 'Approval required first' : 'Ready to bridge'}\n\n` +
+                    `Click the link below to open the bridge widget and connect your MetaMask wallet:\n\n` +
+                    `[🌉 Open Bridge Widget](${widgetUrl})`
+            }],
+            widget: {
+              url: widgetUrl,
+              type: 'deposit'
+            }
           }
         };
       } catch (error) {

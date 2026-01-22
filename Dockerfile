@@ -3,13 +3,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install production dependencies first for better caching
+# Install all dependencies
 COPY package*.json ./
-RUN npm ci --only=production
-
-# Install dev dependencies for build
-COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .
