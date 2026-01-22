@@ -7,7 +7,7 @@ import {
   type Hex,
   encodeFunctionData
 } from 'viem';
-import { sepolia } from 'viem/chains';
+import { mainnet, sepolia } from 'viem/chains';
 import { encodeStacksAddress } from './helpers.js';
 
 // Contract ABIs from official docs
@@ -60,13 +60,22 @@ const ERC20_ABI = [
 
 // Constants from official docs
 const STACKS_DOMAIN = 10003;
-const XRESERVE_CONTRACT = process.env.XRESERVE_CONTRACT as Address || '0x008888878f94C0d87defdf0B07f46B93C1934442';
-const USDC_CONTRACT = process.env.USDC_CONTRACT as Address || '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+
+// Network-specific contract addresses
+const isMainnet = process.env.ETHEREUM_NETWORK === 'mainnet';
+const XRESERVE_CONTRACT = process.env.XRESERVE_CONTRACT as Address ||
+  (isMainnet ? '0x8888888199b2Df864bf678259607d6D5EBb4e3Ce' : '0x008888878f94C0d87defdf0B07f46B93C1934442');
+const USDC_CONTRACT = process.env.USDC_CONTRACT as Address ||
+  (isMainnet ? '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' : '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238');
 
 // Create public client for reading blockchain state
+const chain = isMainnet ? mainnet : sepolia;
+const rpcUrl = process.env.ETHEREUM_RPC_URL ||
+  (isMainnet ? 'https://ethereum.publicnode.com' : 'https://ethereum-sepolia.publicnode.com');
+
 const publicClient = createPublicClient({
-  chain: sepolia,
-  transport: http(process.env.ETHEREUM_RPC_URL || 'https://ethereum-sepolia.publicnode.com')
+  chain,
+  transport: http(rpcUrl)
 });
 
 export interface DepositTransactionData {
@@ -145,12 +154,20 @@ export async function prepareDepositTransaction(
     ]
   });
 
-  // Estimate gas
-  const estimatedGas = await publicClient.estimateGas({
-    to: XRESERVE_CONTRACT,
-    data: depositData,
-    account: userAddress
-  });
+  // Estimate gas (only if no approval needed, otherwise skip to avoid "exceeds allowance" error)
+  let estimatedGas = BigInt(150000); // Default estimate
+  if (!requiresApproval) {
+    try {
+      estimatedGas = await publicClient.estimateGas({
+        to: XRESERVE_CONTRACT,
+        data: depositData,
+        account: userAddress
+      });
+    } catch (error) {
+      // If estimation fails, use default
+      console.warn('Gas estimation failed, using default:', error);
+    }
+  }
 
   return {
     to: XRESERVE_CONTRACT,
@@ -206,14 +223,14 @@ export async function getEthereumTransactionStatus(txHash: Hex): Promise<Transac
       return {
         state,
         confirmations,
-        explorerUrl: `https://sepolia.etherscan.io/tx/${txHash}`,
+        explorerUrl: `https://${isMainnet ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`,
         eta
       };
     } else {
       return {
         state: 'failed',
         confirmations: 0,
-        explorerUrl: `https://sepolia.etherscan.io/tx/${txHash}`,
+        explorerUrl: `https://${isMainnet ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`,
         errorMessage: 'Transaction failed on Ethereum'
       };
     }

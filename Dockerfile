@@ -3,11 +3,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Install production dependencies first for better caching
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci --only=production
+
+# Install dev dependencies for build
+COPY package*.json ./
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -15,11 +17,15 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
-# Expose MCP server port
+# Remove dev dependencies to keep image lean
+RUN npm prune --production
+
+# Expose port
 EXPOSE 3001
 
-# Health check endpoint
-COPY health-check.js ./
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node health-check.js
 
-# Start MCP server
-CMD ["node", "dist/server/index.js"]
+# Start HTTP server (not stdio MCP server)
+CMD ["node", "dist/server/http-server.js"]
