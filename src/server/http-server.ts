@@ -311,8 +311,8 @@ app.post('/mcp-json', async (req, res) => {
   }
 });
 
-// Static file serving for widgets (if needed)
-app.use('/widgets', express.static(path.join(__dirname, '../../widgets')));
+// Static file serving for widgets
+app.use('/widgets', express.static(path.join(__dirname, '../widgets')));
 
 // Default route
 app.get('/', (req, res) => {
